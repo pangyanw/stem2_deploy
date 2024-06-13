@@ -33,41 +33,41 @@ class Direction(Enum):
 
 class Bot:
     __step = 0
-    pos = None
-    direction = None
+    __pos = None
+    __direction = None
     maze = None
 
     def __init__(self, direction, maze):
-        self.direction = direction
+        self.__direction = direction
         row, col = np.where(maze == 2)
         self.maze = maze
-        self.pos = [row, col]
+        self.__pos = [row, col]
 
     def move(self, direction):
         self.__step += 1
         if self.can_move(direction):
             if direction == Direction.UP:
-                self.pos[0] -= 1
-                self.direction = Direction.UP
+                self.__pos[0] -= 1
+                self.__direction = Direction.UP
             elif direction == Direction.DOWN:
-                self.pos[0] += 1
-                self.direction = Direction.DOWN
+                self.__pos[0] += 1
+                self.__direction = Direction.DOWN
             elif direction == Direction.LEFT:
-                self.pos[1] -= 1
-                self.direction = Direction.LEFT
+                self.__pos[1] -= 1
+                self.__direction = Direction.LEFT
             elif direction == Direction.RIGHT:
-                self.pos[1] += 1
-                self.direction = Direction.RIGHT
+                self.__pos[1] += 1
+                self.__direction = Direction.RIGHT
 
     def can_move(self, dir):
         if dir == Direction.UP:
-            return self.pos[0] - 1 >= 0 and self.maze[self.pos[0] - 1, self.pos[1]] != 1
+            return self.__pos[0] - 1 >= 0 and self.maze[self.__pos[0] - 1, self.__pos[1]] != 1
         elif dir == Direction.DOWN:
-            return self.pos[0] + 1 < len(self.maze) and self.maze[self.pos[0] + 1, self.pos[1]] != 1
+            return self.__pos[0] + 1 < len(self.maze) and self.maze[self.__pos[0] + 1, self.__pos[1]] != 1
         elif dir == Direction.LEFT:
-            return self.pos[1] - 1 >= 0 and self.maze[self.pos[0], self.pos[1] - 1] != 1
+            return self.__pos[1] - 1 >= 0 and self.maze[self.__pos[0], self.__pos[1] - 1] != 1
         elif dir == Direction.RIGHT:
-            return self.pos[1] + 1 < len(self.maze[0]) and self.maze[self.pos[0], self.pos[1] + 1] != 1
+            return self.__pos[1] + 1 < len(self.maze[0]) and self.maze[self.__pos[0], self.__pos[1] + 1] != 1
         else:
             return False
 
@@ -76,6 +76,15 @@ class Bot:
 
     def reset_step(self):
         self.__step = 0
+
+    def get_y(self):
+        return self.__pos[0]
+
+    def get_x(self):
+        return self.__pos[1]
+
+    def get_direction(self):
+        return self.__direction
 
 
 def generate_2d_maze(maze_str):
@@ -105,7 +114,7 @@ def draw_maze(maze, bot=None):
     maze_copy = np.copy(maze)
     if bot is not None:
         maze_copy[np.where(maze == 2)] = 0
-        maze_copy[bot.pos[0], bot.pos[1]] = 2
+        maze_copy[bot.get_y(), bot.get_x()] = 2
         bot.reset_step()
     fig, ax = plt.subplots(figsize=(len(maze_copy), len(maze_copy[0])))
 
@@ -122,4 +131,4 @@ def draw_maze(maze, bot=None):
 
 
 def finish(maze, bot):
-    return maze[bot.pos[0], bot.pos[1]] == 3
+    return maze[bot.get_y(), bot.get_x()] == 3
