@@ -3,6 +3,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 from IPython.display import clear_output
 
+score_board = {}
+
+full_score = {
+    "beginner": 40,
+    "ultimate": 60
+}
+
+maze_demo_str = """#####
+#000E
+#0###
+#0###
+#B###"""
+
 maze1_str = """#E#####
 #0#000#
 #0#B#0#
@@ -116,7 +129,7 @@ def draw_maze(maze, bot=None):
         maze_copy[np.where(maze == 2)] = 0
         maze_copy[bot.get_y(), bot.get_x()] = 2
         bot.reset_step()
-    fig, ax = plt.subplots(figsize=(len(maze_copy), len(maze_copy[0])))
+    fig, ax = plt.subplots(figsize=(len(maze_copy) * 0.5, len(maze_copy[0]) * 0.5))
 
     cmap = plt.get_cmap("binary")
     cmap.set_under(color="black")
@@ -125,10 +138,41 @@ def draw_maze(maze, bot=None):
     ax.imshow(maze_copy, cmap=cmap, vmin=0, vmax=3)
     ax.axis("off")
 
-    plt.show(block=False)
     plt.pause(0.1)
     plt.close(fig)
 
 
 def finish(maze, bot):
     return maze[bot.get_y(), bot.get_x()] == 3
+
+
+def run_maze(maze, run, steps, score_key, demo = False):
+    counter = 0
+    bot = Bot(Direction.UP, maze)
+    while counter < steps:
+        run(bot)
+        if bot.get_step() > 1:
+            raise Exception("You cannot ask the bot to move two steps in one round. It's gonna be exhausting 3_3)")
+        draw_maze(maze, bot)
+        counter += 1
+        if finish(maze, bot):
+            if demo:
+                print("That is how a maze master does things!")
+            else:
+                score_board[score_key] = full_score[score_key]
+                print(f'Thank you! You are doing a great job! Here is your {full_score[score_key]} points.')
+            break
+    if not finish(maze, bot):
+        score_board[score_key] = 0
+        print("Sorry you failed to help the bot...")
+
+
+maze_demo = generate_2d_maze(maze_demo_str)
+maze_beginner = generate_2d_maze(maze1_str)
+maze_ultimate = generate_2d_maze(maze2_str)
+
+
+def show_scoreboard():
+    print("Here is your scores for the games:")
+    print(f'Beginner Maze: {score_board["beginner"]}')
+    print(f'Ultimate Maze: {score_board["ultimate"]}')
