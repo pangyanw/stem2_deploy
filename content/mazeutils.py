@@ -6,8 +6,9 @@ from IPython.display import clear_output
 score_board = {}
 
 full_score = {
-    "beginner": 40,
-    "ultimate": 60
+    "beginner1": 20,
+    "beginner2": 30,
+    "ultimate": 50
 }
 
 maze_demo_str = """#####
@@ -16,14 +17,21 @@ maze_demo_str = """#####
 #0###
 #B###"""
 
-maze1_str = """#E#####
+maze_beginner_str_1 = """#E#####
 #0#000#
 #0#B#0#
 #0###0#
 #00000#
 #######"""
 
-maze2_str = """############
+maze_beginner_str_2 = """#####E#
+#000#0#
+#0#B#0#
+#0###0#
+#00000#
+#######"""
+
+maze_ultimate_str = """############
 #00#0000000#
 E0##0#0##0##
 #0000#00#00#
@@ -37,52 +45,71 @@ E0##0#0##0##
 #B##########"""
 
 
-class Direction(Enum):
-    LEFT = 1
-    RIGHT = 2
-    UP = 3
-    DOWN = 4
+class Cardinal(Enum):
+    WEST = 1
+    EAST = 2
+    NORTH = 3
+    SOUTH = 4
 
+
+def find_adjacent_way(maze, pos):
+    row = pos[0]
+    col = pos[1]
+    # Check the four adjacent cells
+    if row > 0 and maze[row - 1][col] == 1:
+        return (row - 1, col)
+    if row < len(maze) - 1 and maze[row + 1][col] == 1:
+        return (row+1, col)
+    if col > 0 and maze[row][col - 1] == 1:
+        return (row, col-1)
+    if col < len(maze[0]) - 1 and maze[row][col + 1] == 1:
+        return (row, col+1)
 
 class Bot:
     __step = 0
     __pos = None
-    __direction = None
+    __cardinal = None
     maze = None
 
-    def __init__(self, direction, maze):
-        self.__direction = direction
+    def __init__(self, maze):
         row, col = np.where(maze == 2)
         self.maze = maze
         self.__pos = [row, col]
+        if row > 0 and maze[row - 1, col] == 0:
+            self.__cardinal = Cardinal.NORTH
+        if row < len(maze) - 1 and maze[row + 1, col] == 0:
+            self.__cardinal = Cardinal.SOUTH
+        if col > 0 and maze[row, col - 1] == 0:
+            self.__cardinal = Cardinal.WEST
+        if col < len(maze[0]) - 1 and maze[row, col + 1] == 0:
+            self.__cardinal = Cardinal.EAST
 
-    def move(self, direction):
+    def move(self):
         self.__step += 1
-        if self.can_move(direction):
-            if direction == Direction.UP:
+        if self.can_move():
+            if self.__cardinal == Cardinal.NORTH:
                 self.__pos[0] -= 1
-                self.__direction = Direction.UP
-            elif direction == Direction.DOWN:
+            elif self.__cardinal == Cardinal.SOUTH:
                 self.__pos[0] += 1
-                self.__direction = Direction.DOWN
-            elif direction == Direction.LEFT:
+            elif self.__cardinal == Cardinal.WEST:
                 self.__pos[1] -= 1
-                self.__direction = Direction.LEFT
-            elif direction == Direction.RIGHT:
+            elif self.__cardinal == Cardinal.EAST:
                 self.__pos[1] += 1
-                self.__direction = Direction.RIGHT
 
-    def can_move(self, dir):
-        if dir == Direction.UP:
+    def can_move(self):
+        if self.__cardinal == Cardinal.NORTH:
             return self.__pos[0] - 1 >= 0 and self.maze[self.__pos[0] - 1, self.__pos[1]] != 1
-        elif dir == Direction.DOWN:
+        elif self.__cardinal == Cardinal.SOUTH:
             return self.__pos[0] + 1 < len(self.maze) and self.maze[self.__pos[0] + 1, self.__pos[1]] != 1
-        elif dir == Direction.LEFT:
+        elif self.__cardinal == Cardinal.WEST:
             return self.__pos[1] - 1 >= 0 and self.maze[self.__pos[0], self.__pos[1] - 1] != 1
-        elif dir == Direction.RIGHT:
+        elif self.__cardinal == Cardinal.EAST:
             return self.__pos[1] + 1 < len(self.maze[0]) and self.maze[self.__pos[0], self.__pos[1] + 1] != 1
         else:
             return False
+
+    def turn(self, cardinal):
+        self.__cardinal = cardinal
 
     def get_step(self):
         return self.__step
@@ -96,8 +123,8 @@ class Bot:
     def get_x(self):
         return self.__pos[1]
 
-    def get_direction(self):
-        return self.__direction
+    def get_cardinal(self):
+        return self.__cardinal
 
 
 def generate_2d_maze(maze_str):
@@ -148,7 +175,7 @@ def finish(maze, bot):
 
 def run_maze(maze, run, steps, score_key, demo = False):
     counter = 0
-    bot = Bot(Direction.UP, maze)
+    bot = Bot(maze)
     while counter < steps:
         run(bot)
         if bot.get_step() > 1:
@@ -168,11 +195,13 @@ def run_maze(maze, run, steps, score_key, demo = False):
 
 
 maze_demo = generate_2d_maze(maze_demo_str)
-maze_beginner = generate_2d_maze(maze1_str)
-maze_ultimate = generate_2d_maze(maze2_str)
+maze_beginner_1 = generate_2d_maze(maze_beginner_str_1)
+maze_beginner_2 = generate_2d_maze(maze_beginner_str_2)
+maze_ultimate = generate_2d_maze(maze_ultimate_str)
 
 
 def show_scoreboard():
     print("Here is your scores for the games:")
-    print(f'Beginner Maze: {score_board["beginner"]}')
+    print(f'Beginner Maze 1: {score_board["beginner1"]}')
+    print(f'Beginner Maze 2: {score_board["beginner2"]}')
     print(f'Ultimate Maze: {score_board["ultimate"]}')
