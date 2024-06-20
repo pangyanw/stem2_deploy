@@ -5,10 +5,17 @@ from IPython.display import clear_output
 
 score_board = {}
 
-full_score = {
-    "beginner1": 20,
-    "beginner2": 30,
+step_limit = {
+    "demo": 15,
+    "beginner1": 15,
+    "beginner2": 15,
     "ultimate": 50
+}
+
+full_score = {
+    "beginner1": 4,
+    "beginner2": 6,
+    "ultimate": 10
 }
 
 maze_demo_str = """#####
@@ -173,10 +180,10 @@ def finish(maze, bot):
     return maze[bot.get_y(), bot.get_x()] == 3
 
 
-def run_maze(maze, run, steps, score_key, demo = False):
+def run_maze(maze, run, score_key, demo = False):
     counter = 0
     bot = Bot(maze)
-    while counter < steps:
+    while counter < step_limit[score_key]:
         run(bot)
         if bot.get_step() > 1:
             raise Exception("You cannot ask the bot to move two steps in one round. It's gonna be exhausting 3_3)")
@@ -191,7 +198,7 @@ def run_maze(maze, run, steps, score_key, demo = False):
             break
     if not finish(maze, bot):
         score_board[score_key] = 0
-        print("Sorry you failed to help the bot...")
+        print(f'Sorry you failed to help the bot within {step_limit[score_key]} steps...')
 
 
 maze_demo = generate_2d_maze(maze_demo_str)
