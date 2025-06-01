@@ -16,7 +16,7 @@ class FreezedParam():
 def grade_test(test_class, returns=False):
     test = unittest.main(argv=[''],defaultTest=test_class.__name__, verbosity=0, exit=False)
     total = test.result.testsRun
-    fails = len(test.result.failures)
+    fails = len(test.result.failures) + len(test.result.errors)
     score = total - fails
     percentage = int(float(score)/float(total) * 100)
     result = (total, score, fails, percentage)
